@@ -7,7 +7,7 @@ variable "location" {
 variable "vm_size" {
   description = "VM SKU to deploy. Change when a SKU has capacity restrictions."
   type        = string
-  default     = "Standard_D2s_v5"
+  default     = "Standard_D2as_v5"
 }
 
 variable "vm_zone" {
@@ -15,6 +15,18 @@ variable "vm_zone" {
   type        = string
   default     = null
   nullable    = true
+}
+
+variable "os_disk_type" {
+  description = "OS disk SKU."
+  type        = string
+  default     = "StandardSSD_LRS"
+}
+
+variable "os_disk_size_gb" {
+  description = "OS disk size in GB."
+  type        = number
+  default     = 64
 }
 
 resource "azurerm_resource_group" "my_vm_rg" {
@@ -115,7 +127,8 @@ resource "azurerm_linux_virtual_machine" "my_vm" {
   }
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+    storage_account_type = var.os_disk_type
+    disk_size_gb         = var.os_disk_size_gb
   }
   source_image_reference {
     publisher = "Canonical"
