@@ -1,6 +1,25 @@
+variable "location" {
+  description = "Azure region for all resources."
+  type        = string
+  default     = "centralindia"
+}
+
+variable "vm_size" {
+  description = "VM SKU to deploy. Change when a SKU has capacity restrictions."
+  type        = string
+  default     = "Standard_D2s_v5"
+}
+
+variable "vm_zone" {
+  description = "Optional availability zone (1, 2, or 3). Set null to omit."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 resource "azurerm_resource_group" "my_vm_rg" {
   name     = "my-vm-rg"
-  location = "centralindia"
+  location = var.location
 }
 
 resource "azurerm_virtual_network" "my_vm_vnet" {
@@ -75,7 +94,7 @@ resource "azurerm_network_interface" "nic" {
   resource_group_name = azurerm_resource_group.my_vm_rg.name
   ip_configuration {
     name                          = "my-vm-ip-config"
-    subnet_id                     = azurerm_subnet.my_vm_subnet.id
+    subnet_id                     = azurerm_subnet.my_vm_subnet_3.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.pip.id
   }
@@ -87,10 +106,11 @@ resource "azurerm_linux_virtual_machine" "my_vm" {
   location              = azurerm_resource_group.my_vm_rg.location
   resource_group_name   = azurerm_resource_group.my_vm_rg.name
   network_interface_ids = [azurerm_network_interface.nic.id]
-  size                  = "Standard_B1s"
+  size                  = var.vm_size
+  zone                  = var.vm_zone
   admin_username        = "azureuser"
   admin_ssh_key {
-    public_key = file("~/.ssh/id_rsa.pub")
+    public_key = file(pathexpand("~/.ssh/id_rsa.pub"))
     username   = "azureuser"
   }
   os_disk {
