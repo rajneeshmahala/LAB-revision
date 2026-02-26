@@ -49,6 +49,11 @@ resource "azurerm_application_gateway" "appgw" {
     tier     = "WAF_v2"
     capacity = 1
   }
+  ssl_policy {
+    policy_type = "Predefined"
+    policy_name = "AppGwSslPolicy20220101"
+  }
+
 
   gateway_ip_configuration {
     name      = "appgw-ip-config"
@@ -111,8 +116,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
   default_node_pool {
     name                = "system"
     vm_size             = var.node_vm_size
-    node_count          = 3
-    zones               = ["1","2","3"]
+    node_count          = 1
+    
     vnet_subnet_id      = azurerm_subnet.aks_subnet.id
     only_critical_addons_enabled = true
   }
@@ -137,10 +142,11 @@ resource "azurerm_kubernetes_cluster_node_pool" "userpool" {
   name                  = "userpool"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
   vm_size               = var.node_vm_size
-  auto_scaling_enabled  = true
-  min_count             = 1
-  max_count             = 3
-  zones                 = ["1","2","3"]
+  #enable_auto_scaling  = true
+  node_count = 1
+  #min_count             = 1
+  #max_count             = 3
+  #zones                 = ["1","2"]
 }
 
 # Role Assignment for AGIC (Allow AKS to manage App Gateway)
